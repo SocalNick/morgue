@@ -3,6 +3,7 @@
         "slim/slim": "1.6.*",
          "wikimedia/composer-merge-plugin": "dev-master"
     },
+    "include-path": ["features/"],
     "extra": {
         "merge-plugin": {
             "include": [

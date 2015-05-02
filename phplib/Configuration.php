@@ -16,6 +16,18 @@ class Configuration {
         $enviroment = getenv('MORGUE_ENVIRONMENT') ?: 'development';
         $configfile = dirname(__FILE__).'/../config/'.$enviroment.'.json';
         $config = json_decode(file_get_contents($configfile), true);
+
+        // Make more elegant
+        if (getenv('VCAP_SERVICES')) {
+            $vcapServices = json_decode($_ENV['VCAP_SERVICES'], true);
+            $clearDbCreds = $vcapServices['cleardb'][0]['credentials'];
+            $config['database']['mysqlhost'] = $clearDbCreds['hostname'];
+            $config['database']['mysqlport'] = $clearDbCreds['port'];
+            $config['database']['database'] = $clearDbCreds['name'];
+            $config['database']['username'] = $clearDbCreds['username'];
+            $config['database']['password'] = $clearDbCreds['password'];
+        }
+
         if (is_null($name)) {
             return $config;
         } else {
