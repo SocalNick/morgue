@@ -33,6 +33,10 @@ if (!$config) {
 	include '../views/page.php';
 	die();
 }
+
+session_cache_limiter(false);
+session_start();
+
 $app = new Slim();
 $app->config('debug', true);
 
@@ -46,6 +50,7 @@ if ($config['environment'] == "development") {
 
 // must be require_once'd after the Slim autoloader is registered
 require_once 'phplib/AssetVersionMiddleware.php';
+require_once 'phplib/OAuth2Middleware.php';
 
 // helper method for returning the selected timezone.
 // If set, get the user timezone else get it from the global config
@@ -97,26 +102,17 @@ function default_status_time() {
     return new DateTime('1970-01-01', new DateTimeZone('UTC'));
 }
 
-
-$app->add(
-    new Slim_Middleware_SessionCookie(
-        array(
-            'expires' => '60 minutes',
-            'path' => '/',
-            'domain' => null,
-            'secure' => false,
-            'httponly' => false,
-            'name' => 'postmortem',
-            'secret' => 'PMS_R_US',
-            'cipher' => MCRYPT_RIJNDAEL_256,
-            'cipher_mode' => MCRYPT_MODE_CBC
-        )
-    )
-);
-
+// Add middleware
+$app->add(new OAuth2Middleware());
 $app->add(new AssetVersionMiddleware);
 
 
+// Setup OAuth2Provider
+$app->oauth2Provider = new League\OAuth2\Client\Provider\Github([
+    'clientId'          => getenv('GITHUB_CLIENT_ID'),
+    'clientSecret'      => getenv('GITHUB_CLIENT_SECRET'),
+    'redirectUri'       => $app->request()->getUrl() . $app->urlFor('oauth2-callback'),
+]);
 
 /*
  * Now include all routes and libraries for features before actually running the app
