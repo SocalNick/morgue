@@ -19,7 +19,7 @@ class Configuration {
 
         // Make more elegant
         if (getenv('VCAP_SERVICES')) {
-            $vcapServices = json_decode($_ENV['VCAP_SERVICES'], true);
+            $vcapServices = json_decode(getenv('VCAP_SERVICES'), true);
             $clearDbCreds = $vcapServices['cleardb'][0]['credentials'];
             $config['database']['mysqlhost'] = $clearDbCreds['hostname'];
             $config['database']['mysqlport'] = $clearDbCreds['port'];
