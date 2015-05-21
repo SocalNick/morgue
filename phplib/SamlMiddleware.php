@@ -56,3 +56,18 @@ $app->post('/saml/consume', function() use ($app) {
 $app->get('/saml-sls', function() use ($app) {
     die('SLS!');
 })->name('saml-sls');
+
+$app->get('/saml/metadata', function() use ($app) {
+    $settings = $app->samlSettings;
+    $metadata = $settings->getSPMetadata();
+    $errors = $settings->validateMetadata($metadata);
+    if (!empty($errors)) {
+        throw new OneLogin_Saml2_Error(
+            'Invalid SP metadata: '.implode(', ', $errors),
+            OneLogin_Saml2_Error::METADATA_SP_INVALID
+        );
+    }
+
+    $app->response()->header('Content-Type', 'text/xml');
+    echo $metadata;
+})->name('saml-metadata');
