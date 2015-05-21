@@ -53,8 +53,40 @@ $app->post('/saml/consume', function() use ($app) {
     }
 })->name('saml-acs');
 
+$app->get('/saml/slo', function() use ($app) {
+    $settings = $app->samlSettings;
+
+    $idpData = $settings->getIdPData();
+    if (isset($idpData['singleLogoutService']) && isset($idpData['singleLogoutService']['url'])) {
+        $sloUrl = $idpData['singleLogoutService']['url'];
+    } else {
+        OneLogin_Saml2_Utils::deleteLocalSession();
+        throw new Exception("The IdP does not support Single Log Out");
+    }
+
+    if (isset($_SESSION['IdPSessionIndex']) && !empty($_SESSION['IdPSessionIndex'])) {
+        $logoutRequest = new OneLogin_Saml2_LogoutRequest($settings, null, $_SESSION['IdPSessionIndex']);
+    } else {
+        $logoutRequest = new OneLogin_Saml2_LogoutRequest($settings);
+    }
+
+    $samlRequest = $logoutRequest->getRequest();
+    $parameters = array('SAMLRequest' => $samlRequest);
+
+    $url = OneLogin_Saml2_Utils::redirect($sloUrl, $parameters, true);
+    $this->app->redirect($url);
+})->name('saml-slo');
+
 $app->get('/saml-sls', function() use ($app) {
-    die('SLS!');
+    $settings = $app->samlSettings;
+
+    $idpData = $settings->getIdPData();
+    if (isset($idpData['singleLogoutService']) && isset($idpData['singleLogoutService']['url'])) {
+        $sloUrl = $idpData['singleLogoutService']['url'];
+    } else {
+        OneLogin_Saml2_Utils::deleteLocalSession();
+        throw new Exception("The IdP does not support Single Log Out");
+    }
 })->name('saml-sls');
 
 $app->get('/saml/metadata', function() use ($app) {
