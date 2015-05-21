@@ -109,7 +109,30 @@ $app->add(new AssetVersionMiddleware);
 // Setup Saml Settings
 $app->samlSettings = new OneLogin_Saml2_Settings(
     array (
-        // FILL ME IN
+        'strict' => true,
+        // Service Provider Data that we are deploying
+        'sp' => array (
+            'entityId' => getenv('SAML_SERVICE_PROVIDER_ENTITY_ID'), // Identifier of the SP entity  (must be a URI)
+            'assertionConsumerService' => array (
+                'url' => $app->request()->getUrl() . $app->urlFor('saml-acs'),
+                'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
+            ),
+            'singleLogoutService' => array (
+                'url' => $app->request()->getUrl() . $app->urlFor('saml-sls'),
+                'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+            ),
+            'NameIDFormat' => 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
+        ),
+        // Identity Provider Data that we want connect with our SP
+        'idp' => array (
+            'entityId' => getenv('SAML_IDENTITY_PROVIDER_ENTITY_ID'), // Identifier of the IdP entity  (must be a URI)
+            'singleSignOnService' => array (
+                'url' => getenv('SAML_IDENTITY_PROVIDER_SSO_URL'),
+                'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+            ),
+            'certFingerprint' => getenv('SAML_IDENTITY_PROVIDER_CERT_FINGERPRINT'),
+            'certFingerprintAlgorithm' => getenv('SAML_IDENTITY_PROVIDER_CERT_FINGERPRINT_ALGORITHM'),
+        ),
     )
 );
 
