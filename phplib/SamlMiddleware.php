@@ -1,5 +1,4 @@
 <?php
-// FIXME
 date_default_timezone_set('UTC');
 
 class SamlMiddleware extends Slim_Middleware {
