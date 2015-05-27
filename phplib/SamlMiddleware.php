@@ -47,9 +47,10 @@ $app->post('/saml/consume', function() use ($app) {
     $_SESSION['samlUserdata'] = $samlResponse->getAttributes();
     $_SESSION['IdPSessionIndex'] = $samlResponse->getSessionIndex();
 
-    if (isset($_POST['RelayState']) && $_POST['RelayState'] != $app->request()->getPathInfo()) {
+    if (isset($_POST['RelayState']) && !empty($_POST['RelayState']) && $_POST['RelayState'] != $app->request()->getPathInfo()) {
         $app->redirect($_POST['RelayState']);
     }
+    $app->redirect('/');
 })->name('saml-acs');
 
 $app->get('/saml/slo', function() use ($app) {
